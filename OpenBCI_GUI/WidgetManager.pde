@@ -19,6 +19,7 @@ W_accelerometer w_accelerometer;
 W_networking w_networking;
 W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
+W_neurofeedback w_neurofeedback;
 W_emg w_emg;
 W_openBionics w_openbionics;
 
@@ -58,6 +59,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
+
+  w_neurofeedback = new W_neurofeedback(_this);
+  w_neurofeedback.setTitle("Neurofeedback");
+  addWidget(w_neurofeedback, w);
 
   // w_template2 = new W_template(_this);
   // w_template2.setTitle("Widget Template 2");
