@@ -28,12 +28,12 @@ class W_neurofeedback extends Widget {
   
     minim = new Minim(this);
     out = minim.getLineOut();
-    float panFactor = 0.8f;                 // 1 means total left/right pan, 0 means MONO (all tones in both
-                                          // channels, 0.8 means mixing 80/20, good for headphones
+    float panFactor = 0f;                 // 1 means total left/right pan, 0 means MONO (all tones in both
+                                          // channels, 0.8f means mixing 80/20, good for headphones
 
     // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
-    waves = new Oscil[8 * numHarmonic];
-    for (int i=0 ; i<8; i++) 
+    waves = new Oscil[nchan * numHarmonic];
+    for (int i=0 ; i<nchan; i++) 
       for (int j=0 ; j<numHarmonic ; j++) {
       waves[(i*numHarmonic)+j] = new Oscil( baseFrequency(i,0f)*(j+1), 0.0f, Waves.SINE );
       if (i%2 == 0) {
@@ -50,7 +50,7 @@ class W_neurofeedback extends Widget {
   }
 
   private float baseFrequency(int channel, float amplitude) {
-    return (300 + (channel*50) /* + (100*amplitude)*/);
+    return (400 + (channel*(400/nchan)) /* + (100*amplitude)*/);
   }
 
   private void setTone(int channel, float amplitude) {
@@ -71,7 +71,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
     float FFT_freq_Hz, FFT_value_uV;
-    for (int Ichan=0;Ichan < nchan; Ichan++) { // TODO: nchan
+    for (int Ichan=0;Ichan < nchan; Ichan++) {
       //loop over each new sample
       
       float amplitude = 0;
@@ -91,7 +91,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
 
      if (isChannelActive(Ichan)) {
         System.out.println((Ichan+1) + ": " + (amplitude/samples) + "(max: " + max_amplitude +") over " + samples +" samples");
-        if (max_amplitude < 15) setTone(Ichan, map((max_amplitude<5) ? max_amplitude : 5, 0, 5, 0, 1));
+        if (max_amplitude < 15) setTone(Ichan, map((max_amplitude<10) ? max_amplitude : 10, 0, 10, 0, 1));
           else setTone(Ichan,0);
     
      } else setTone(Ichan,0);
