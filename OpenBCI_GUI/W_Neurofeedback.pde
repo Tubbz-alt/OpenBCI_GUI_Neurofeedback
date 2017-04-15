@@ -26,7 +26,7 @@ class W_neurofeedback extends Widget {
   int hemicoherence_chan2 = 1;
   boolean hemicoherence_enabled = false;
   float[] hemicoherenceMemory;
-  final int hemicoherenceMemoryLength = 20;
+  final int hemicoherenceMemoryLength = 10;
   int hemicoherenceMemoryPointer = 0;
 
 

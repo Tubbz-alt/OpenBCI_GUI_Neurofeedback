@@ -9,8 +9,28 @@ Caveats:
 
 The code tries to detect artifacts (like jaw movement) by ignoring "superloud tones" over a certain maximal amplitude - when the tone goes over this threshold, the tone is actually set to total silence.
 
+There is also an option to have hemicoherence tone. You would set up A
+and B channels in the GUI with channels corresponding to the same
+position on both hemispheres. The difference between these two signals
+is the opposite to coherence, the lower the number, the louder the tone.
+
+Installation
+============
+
 You can use this software instead of official and the neurofeedback should just work when you select
 the neurofeedback widget in the GUI :).
+
+For installation instructions see [the original documentation on
+running OpenBCI_GUI from
+Processing](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide).
+Please note that in addition to running it from the IDE, you need
+to copy libraries and the sketch to the right directory and download
+and setup Ganglion Hub for Ganglion boards, the documentation is
+pretty specific on what to do, if you follow it, it will work!
+
+If you do not see any Ganglion Bluetooth devices and you have Bluetooth on,
+it probably means that Ganlgion Hub is not set up correctly - you need
+to put it into the correct directory and not run it as a standalone app!
 
 Released under original MIT license, (c) 2017 Juraj Bednár
 
