@@ -21,19 +21,40 @@ class W_neurofeedback extends Widget {
   AudioOutput out;
   Oscil[]       waves;
   int numHarmonic = 2; // number of harmonic frequencies for each wave
+  
+  int hemicoherence_chan1 = 0;
+  int hemicoherence_chan2 = 1;
+  boolean hemicoherence_enabled = false;
+  float[] hemicoherenceMemory;
+  final int hemicoherenceMemoryLength = 20;
+  int hemicoherenceMemoryPointer = 0;
 
 
   W_neurofeedback(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
   
+    List <String> channelList = new ArrayList<String>();
+    for (int i = 0; i < nchan; i++) {
+      channelList.add(Integer.toString(i + 1));
+    }
+  
+    addDropdown("HemicoherenceEnable", "HC Feedback", Arrays.asList("Off", "On"), 0);
+    addDropdown("HemicoherenceChan1", "Chan A", channelList, hemicoherence_chan1);
+    addDropdown("HemicoherenceChan2", "Chan B", channelList, hemicoherence_chan2);
+  
+    hemicoherenceMemory = new float[hemicoherenceMemoryLength];
+    for (int i=0;i<hemicoherenceMemoryLength;i++) {
+      hemicoherenceMemory[i] = 0f;
+    }
+    
     minim = new Minim(this);
     out = minim.getLineOut();
     float panFactor = 0f;                 // 1 means total left/right pan, 0 means MONO (all tones in both
                                           // channels, 0.8f means mixing 80/20, good for headphones
 
     // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
-    waves = new Oscil[nchan * numHarmonic];
-    for (int i=0 ; i<nchan; i++) 
+    waves = new Oscil[(nchan + 1) * numHarmonic]; // we have one tone for hemicoherence, this nchan+1
+    for (int i=0 ; i<nchan + 1; i++) 
       for (int j=0 ; j<numHarmonic ; j++) {
       waves[(i*numHarmonic)+j] = new Oscil( baseFrequency(i,0f)*(j+1), 0.0f, Waves.SINE );
       if (i%2 == 0) {
@@ -97,8 +118,38 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
      } else setTone(Ichan,0);
 
     }  
+    
+    // hemicoherence calculation
+    if (hemicoherence_enabled) {
+      float hemiIncoherenceAmplitude = 0;
+      for (int Ibin=0; Ibin < data_forDisplay_uV[hemicoherence_chan1].length; Ibin++){
+          // calculate difference between chan1 and chan2, the lower the number, the higher the coherence
+          hemiIncoherenceAmplitude += data_forDisplay_uV[hemicoherence_chan1][Ibin] - 
+                data_forDisplay_uV[hemicoherence_chan2][Ibin];
+      }
+      System.out.println("Hemicoherence factor " + pow(0.95, abs(hemiIncoherenceAmplitude)));
+      addHemiCoherence(pow(0.5, abs(hemiIncoherenceAmplitude)));
+    } else setTone(nchan, 0);
+    
   }
 
+  void addHemiCoherence(float x) {
+    hemicoherenceMemory[hemicoherenceMemoryPointer] = x;
+    hemicoherenceMemoryPointer++;
+    if (hemicoherenceMemoryPointer>=hemicoherenceMemoryLength)
+      hemicoherenceMemoryPointer = 0;
+    
+    float averageAmplitude = 0f;
+    float maxAmplitude = 0f;
+    for (int i=0;i<hemicoherenceMemoryLength;i++) {
+      averageAmplitude+= hemicoherenceMemory[i]; 
+      if (hemicoherenceMemory[i]>maxAmplitude)
+        maxAmplitude = hemicoherenceMemory[i];
+    }
+    averageAmplitude = averageAmplitude/hemicoherenceMemoryLength;
+    
+    setTone(nchan, maxAmplitude);
+  }
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
@@ -146,3 +197,19 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
 
 
 };
+
+void HemicoherenceEnable(int n) {
+  if (n==0) w_neurofeedback.hemicoherence_enabled = false;
+  else w_neurofeedback.hemicoherence_enabled = true;
+  closeAllDropdowns();
+}
+
+void HemicoherenceChan1(int n) {
+  w_neurofeedback.hemicoherence_chan1 = n;
+  closeAllDropdowns();
+}
+
+void HemicoherenceChan2(int n) {
+  w_neurofeedback.hemicoherence_chan2 = n;
+  closeAllDropdowns();
+}
