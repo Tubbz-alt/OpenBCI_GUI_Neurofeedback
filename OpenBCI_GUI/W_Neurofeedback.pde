@@ -165,9 +165,12 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
      if (alpha_amplitude < noise_cutoff_level) { // to avoid noise when a person is moving
        if (alphaOnly) {
         setTone(Ichan, map(alpha_amplitude, 0, noise_cutoff_level, 0, 1)); // or some other range?
+        recordAmplitude(Ichan, alpha_amplitude);
        } else { // alpha - beta
         setTone(Ichan, map(constrain(alpha_amplitude - beta_amplitude, 0, noise_cutoff_level),
           0, noise_cutoff_level, 0, 1)); // or some other range?
+        recordAmplitude(Ichan,
+          constrain(alpha_amplitude - beta_amplitude, 0, noise_cutoff_level));
        }
      } else setTone(Ichan,0);
     } else setTone(Ichan,0);
@@ -186,7 +189,6 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
       System.out.println("Hemicoherence factor " + pow(0.95, hemiIncoherenceAmplitude));
       addHemiCoherence(pow(0.95, hemiIncoherenceAmplitude));
     } else setTone(nchan, 0);
-    
   }
 
   void addHemiCoherence(float x) {
@@ -194,7 +196,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
     hemicoherenceMemoryPointer++;
     if (hemicoherenceMemoryPointer>=hemicoherenceMemoryLength)
       hemicoherenceMemoryPointer = 0;
-    
+
     float averageAmplitude = 0f;
     float maxAmplitude = 0f;
     for (int i=0;i<hemicoherenceMemoryLength;i++) {
@@ -203,9 +205,15 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
         maxAmplitude = hemicoherenceMemory[i];
     }
     averageAmplitude = averageAmplitude/hemicoherenceMemoryLength;
-    
+
     //setTone(nchan, maxAmplitude);
     setTone(nchan, averageAmplitude);
+    recordAmplitude(nchan, averageAmplitude);
+  }
+
+  void recordAmplitude(int chan, float amplitude) {
+    // TODO: remember amplitudes (per second) for each channel in an array,
+    // calculate one-minute sum and display
   }
 
   void draw(){
