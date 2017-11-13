@@ -6,8 +6,10 @@
 //    A tone neurofeedback for alpha band (7.5-12.5Hz) for all channels. The tone is hardcoded. The feedback is
 //    both with amplitude of the tone and slight changes of frequency. The tone is different for each feedback channel. 
 //    This is a pretty basic, but working feedback proof of concept.
+//    You can also do feedback on hemicoherence and enable alpha+/beta- feedback
+//    instead of alpha+ only
 //
-//    Created by: Juraj Bednár, April 2017
+//    Created by: Juraj Bednár
 //
 ///////////////////////////////////////////////////,
 
@@ -24,7 +26,10 @@ class W_neurofeedback extends Widget {
   
   int hemicoherence_chan1 = 0;
   int hemicoherence_chan2 = 1;
+
+  float noise_cutoff_level = 3;
   boolean hemicoherence_enabled = false;
+  boolean alphaOnly = true;
   float[] hemicoherenceMemory;
   final int hemicoherenceMemoryLength = 10;
   int hemicoherenceMemoryPointer = 0;
@@ -38,6 +43,10 @@ class W_neurofeedback extends Widget {
       channelList.add(Integer.toString(i + 1));
     }
   
+    addDropdown("FeedbackType", "Type", Arrays.asList("alph+", "alph+ bet-"), 0);
+    addDropdown("NoiseCutoffLevel", "Cutoff", Arrays.asList("2 uV", "3 uV", "4 uV", "5 uV",
+        "6 uV", "7 uV", "8 uV", "9 uV", "10 uV"), 1);
+
     addDropdown("HemicoherenceEnable", "HC Feedback", Arrays.asList("Off", "On"), 0);
     addDropdown("HemicoherenceChan1", "Chan A", channelList, hemicoherence_chan1);
     addDropdown("HemicoherenceChan2", "Chan B", channelList, hemicoherence_chan2);
@@ -92,43 +101,90 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
     float FFT_freq_Hz, FFT_value_uV;
+    float coherence1_alpha_amplitude = 0;
+    float coherence2_alpha_amplitude = 0;
+    float coherence1_beta_amplitude = 0;
+    float coherence2_beta_amplitude = 0;
+
     for (int Ichan=0;Ichan < nchan; Ichan++) {
+
+     if (isChannelActive(Ichan)) {
       //loop over each new sample
-      
-      float amplitude = 0;
-      float max_amplitude = 0;
-      int samples = 0;
-      
+
+      float alpha_amplitude = 0;
+      float alpha_max_amplitude = 0;
+      int alpha_samples = 0;
+
+      float beta_amplitude = 0;
+      float beta_max_amplitude = 0;
+      int beta_samples = 0;
+
+
       for (int Ibin=0; Ibin < fftData[Ichan].specSize(); Ibin++){
         FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
         FFT_value_uV = fftData[Ichan].getBand(Ibin);
         
-        if ((FFT_freq_Hz >= 7.5) && (FFT_freq_Hz <= 12.5)) { // we're in alpha band
-            if (FFT_value_uV > max_amplitude) max_amplitude = FFT_value_uV;
-            amplitude = amplitude + FFT_value_uV;
-            samples++;
+        if ((FFT_freq_Hz >= 7.5) && (FFT_freq_Hz <= 12.5)) { // FFT bins in alpha range
+          if (FFT_value_uV > alpha_max_amplitude) alpha_max_amplitude = FFT_value_uV;
+          alpha_amplitude += FFT_value_uV;
+          alpha_samples++;
+        }
+        else if (FFT_freq_Hz > 12.5 && FFT_freq_Hz <= 30) {  // FFT bins in beta range
+          if (FFT_value_uV > beta_max_amplitude) beta_max_amplitude = FFT_value_uV;
+          beta_amplitude += FFT_value_uV;
+          beta_samples++;
         }
      }
 
-     if (isChannelActive(Ichan)) {
-        System.out.println((Ichan+1) + ": " + (amplitude/samples) + "(max: " + max_amplitude +") over " + samples +" samples");
-        if (max_amplitude < 15) setTone(Ichan, map((max_amplitude<10) ? max_amplitude : 10, 0, 10, 0, 1));
-          else setTone(Ichan,0);
-    
-     } else setTone(Ichan,0);
-
-    }  
-    
-    // hemicoherence calculation
-    if (hemicoherence_enabled) {
-      float hemiIncoherenceAmplitude = 0;
-      for (int Ibin=0; Ibin < data_forDisplay_uV[hemicoherence_chan1].length; Ibin++){
-          // calculate difference between chan1 and chan2, the lower the number, the higher the coherence
-          hemiIncoherenceAmplitude += data_forDisplay_uV[hemicoherence_chan1][Ibin] - 
-                data_forDisplay_uV[hemicoherence_chan2][Ibin];
+     if (hemicoherence_enabled) {
+      if (Ichan == hemicoherence_chan1) {
+        coherence1_alpha_amplitude = alpha_amplitude;
+        coherence1_beta_amplitude = beta_amplitude;
+      } else if (Ichan == hemicoherence_chan2) {
+        coherence1_alpha_amplitude = alpha_amplitude;
+        coherence1_beta_amplitude = beta_amplitude;
       }
-      System.out.println("Hemicoherence factor " + pow(0.95, abs(hemiIncoherenceAmplitude)));
-      addHemiCoherence(pow(0.5, abs(hemiIncoherenceAmplitude)));
+     }
+
+     alpha_amplitude = alpha_amplitude / alpha_samples;
+     beta_amplitude = beta_amplitude / beta_samples;
+
+     if (hemicoherence_enabled) {
+      if (Ichan == hemicoherence_chan1) {
+        coherence1_alpha_amplitude = alpha_amplitude;
+        coherence1_beta_amplitude = beta_amplitude;
+      } else if (Ichan == hemicoherence_chan2) {
+        coherence1_alpha_amplitude = alpha_amplitude;
+        coherence1_beta_amplitude = beta_amplitude;
+      }
+     }
+
+     System.out.println((Ichan+1) + ": alpha: " + (alpha_amplitude/alpha_samples) + 
+       "(max: " + alpha_max_amplitude +") over " + alpha_samples +" samples");
+
+     if (alpha_amplitude < noise_cutoff_level) { // to avoid noise when a person is moving
+       if (alphaOnly) {
+        setTone(Ichan, map(alpha_amplitude, 0, noise_cutoff_level, 0, 1)); // or some other range?
+       } else { // alpha - beta
+        setTone(Ichan, map(constrain(alpha_amplitude - beta_amplitude, 0, noise_cutoff_level),
+          0, noise_cutoff_level, 0, 1)); // or some other range?
+       }
+     } else setTone(Ichan,0);
+    } else setTone(Ichan,0);
+
+   }
+
+    // hemicoherence calculation
+    // TODO: this is coherence of averages, not of samples
+    if (hemicoherence_enabled) {
+      float hemiIncoherenceAmplitude = abs(coherence1_alpha_amplitude - coherence2_alpha_amplitude);
+      if (!alphaOnly) {
+        hemiIncoherenceAmplitude += abs(coherence1_beta_amplitude - coherence2_beta_amplitude);
+        hemiIncoherenceAmplitude = hemiIncoherenceAmplitude/2;
+      }
+
+      System.out.println("Hemicoherence factor " + pow(0.95, hemiIncoherenceAmplitude));
+      addHemiCoherence(pow(0.95, hemiIncoherenceAmplitude));
     } else setTone(nchan, 0);
     
   }
@@ -148,7 +204,8 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
     }
     averageAmplitude = averageAmplitude/hemicoherenceMemoryLength;
     
-    setTone(nchan, maxAmplitude);
+    //setTone(nchan, maxAmplitude);
+    setTone(nchan, averageAmplitude);
   }
 
   void draw(){
@@ -197,6 +254,17 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
 
 
 };
+
+void NoiseCutoffLevel (int n) {
+  w_neurofeedback.noise_cutoff_level = n + 2;
+  closeAllDropdowns();
+}
+
+void FeedbackType(int n) {
+  if (n==0) w_neurofeedback.alphaOnly = true;
+  else w_neurofeedback.alphaOnly = false;
+  closeAllDropdowns();
+}
 
 void HemicoherenceEnable(int n) {
   if (n==0) w_neurofeedback.hemicoherence_enabled = false;
