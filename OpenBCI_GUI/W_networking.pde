@@ -784,7 +784,7 @@ class W_networking extends Widget {
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port1").getText());
         address = cp5_networking.get(Textfield.class, "osc_address1").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
-        stream1 = new Stream(dt1,ip,port,address,filt_pos);
+        stream1 = new Stream(dt1, ip, port, address, filt_pos, nchan);
       }else{
         stream1 = null;
       }
@@ -793,7 +793,7 @@ class W_networking extends Widget {
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port2").getText());
         address = cp5_networking.get(Textfield.class, "osc_address2").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
-        stream2 = new Stream(dt2, ip,port,address,filt_pos);
+        stream2 = new Stream(dt2, ip, port, address, filt_pos, nchan);
       }else{
         stream2 = null;
       }
@@ -802,7 +802,7 @@ class W_networking extends Widget {
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port3").getText());
         address = cp5_networking.get(Textfield.class, "osc_address3").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
-        stream3 = new Stream(dt3, ip,port,address,filt_pos);
+        stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan);
       }else{
         stream3 = null;
       }
@@ -813,7 +813,7 @@ class W_networking extends Widget {
         ip = cp5_networking.get(Textfield.class, "udp_ip1").getText();
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port1").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
-        stream1 = new Stream(dt1,ip,port,filt_pos);
+        stream1 = new Stream(dt1, ip, port, filt_pos, nchan);
       }else{
         stream1 = null;
       }
@@ -821,7 +821,7 @@ class W_networking extends Widget {
         ip = cp5_networking.get(Textfield.class, "udp_ip2").getText();
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port2").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
-        stream2 = new Stream(dt2,ip,port,filt_pos);
+        stream2 = new Stream(dt2, ip, port, filt_pos, nchan);
       }else{
         stream2 = null;
       }
@@ -829,7 +829,7 @@ class W_networking extends Widget {
         ip = cp5_networking.get(Textfield.class, "udp_ip3").getText();
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port3").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
-        stream3 = new Stream(dt3,ip,port,filt_pos);
+        stream3 = new Stream(dt3, ip, port, filt_pos, nchan);
       }else{
         stream3 = null;
       }
@@ -841,7 +841,7 @@ class W_networking extends Widget {
         type = cp5_networking.get(Textfield.class, "lsl_type1").getText();
         nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan1").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
-        stream1 = new Stream(dt1,name,type,nChanLSL,filt_pos);
+        stream1 = new Stream(dt1, name, type, nChanLSL, filt_pos, nchan);
       }else{
         stream1 = null;
       }
@@ -850,7 +850,7 @@ class W_networking extends Widget {
         type = cp5_networking.get(Textfield.class, "lsl_type2").getText();
         nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan2").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
-        stream2 = new Stream(dt2,name,type,nChanLSL,filt_pos);
+        stream2 = new Stream(dt2, name, type, nChanLSL, filt_pos, nchan);
       }else{
         stream2 = null;
       }
@@ -859,7 +859,7 @@ class W_networking extends Widget {
         type = cp5_networking.get(Textfield.class, "lsl_type3").getText();
         nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan3").getText());
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
-        stream3 = new Stream(dt3,name,type,nChanLSL,filt_pos);
+        stream3 = new Stream(dt3, name, type, nChanLSL, filt_pos, nchan);
       }else{
         stream3 = null;
       }
@@ -873,7 +873,7 @@ class W_networking extends Widget {
         baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
 
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
-        stream1 = new Stream(dt1,name,baudRate,filt_pos,pApplet);  //String dataType, String portName, int baudRate, int filter, PApplet _this
+        stream1 = new Stream(dt1, name, baudRate, filt_pos, pApplet, nchan);  //String dataType, String portName, int baudRate, int filter, PApplet _this
       }else{
         stream1 = null;
       }
@@ -938,10 +938,10 @@ class Stream extends Thread{
   String streamType;
   String streamName;
   int nChanLSL;
+  int numChan = 0;
 
   Boolean isStreaming;
   Boolean newData = false;
-  int numChan = nchan;
   // Data buffers
   int start = dataBuffY_filtY_uV[0].length-11;
   int end = dataBuffY_filtY_uV[0].length-1;
@@ -969,10 +969,17 @@ class Stream extends Thread{
 
   PApplet pApplet;
 
+  private void updateNumChan(int _numChan) {
+    numChan = _numChan;
+    println("Stream update numChan to " + numChan);
+    dataToSend = new float[numChan * nPointsPerUpdate];
+    println("nPointsPerUpdate " + nPointsPerUpdate);
 
+    println("dataToSend len: " + numChan * nPointsPerUpdate);
+  }
 
   /* OSC Stream */
-  Stream(String dataType, String ip, int port, String address, int filter){
+  Stream(String dataType, String ip, int port, String address, int filter, int _nchan){
     this.protocol = "OSC";
     this.dataType = dataType;
     this.ip = ip;
@@ -980,19 +987,21 @@ class Stream extends Thread{
     this.address = address;
     this.filter = filter;
     this.isStreaming = false;
+    updateNumChan(_nchan);
     try{
       closeNetwork(); //make sure everything is closed!
     }catch (Exception e){
     }
   }
   /*UDP Stream */
-  Stream(String dataType, String ip, int port, int filter){
+  Stream(String dataType, String ip, int port, int filter, int _nchan){
     this.protocol = "UDP";
     this.dataType = dataType;
     this.ip = ip;
     this.port = port;
     this.filter = filter;
     this.isStreaming = false;
+    updateNumChan(_nchan);
     if(this.dataType.equals("TimeSeries")){
       buffer = ByteBuffer.allocate(4*numChan);
     }else{
@@ -1004,7 +1013,7 @@ class Stream extends Thread{
     }
   }
   /* LSL Stream */
-  Stream(String dataType, String streamName, String streamType, int nChanLSL, int filter){
+  Stream(String dataType, String streamName, String streamType, int nChanLSL, int filter, int _nchan){
     this.protocol = "LSL";
     this.dataType = dataType;
     this.streamName = streamName;
@@ -1012,6 +1021,7 @@ class Stream extends Thread{
     this.nChanLSL = nChanLSL;
     this.filter = filter;
     this.isStreaming = false;
+    updateNumChan(_nchan);
     try{
       closeNetwork(); //make sure everything is closed!
     }catch (Exception e){
@@ -1019,7 +1029,7 @@ class Stream extends Thread{
   }
 
   // Serial Stream %%%%%
-  Stream(String dataType, String portName, int baudRate, int filter, PApplet _this){
+  Stream(String dataType, String portName, int baudRate, int filter, PApplet _this, int _nchan){
     // %%%%%
     this.protocol = "Serial";
     this.dataType = dataType;
@@ -1028,6 +1038,7 @@ class Stream extends Thread{
     this.filter = filter;
     this.isStreaming = false;
     this.pApplet = _this;
+    updateNumChan(_nchan);
     if(this.dataType.equals("TimeSeries")){
       buffer = ByteBuffer.allocate(4*numChan);
     }else{
@@ -1152,7 +1163,7 @@ class Stream extends Thread{
     if(filter==0){
       // OSC
       if(this.protocol.equals("OSC")){
-        for(int i=0;i<bufferLen;i++){
+        for(int i=0;i<nPointsPerUpdate;i++){
           msg.clearArguments();
           for(int j=0;j<numChan;j++){
             msg.add(yLittleBuff_uV[j][i]);
@@ -1165,16 +1176,25 @@ class Stream extends Thread{
        }
        // UDP
      }else if (this.protocol.equals("UDP")){
-       for(int i=0;i<bufferLen;i++){
-         buffer.rewind();
-         for(int j=0;j<numChan;j++){
-           buffer.putFloat(yLittleBuff_uV[j][i]);
+       for(int i=0;i<nPointsPerUpdate;i++){
+         String outputter = "{\"type\":\"eeg\",\"data\":[";
+         for (int j = 0; j < numChan; j++){
+           outputter += str(yLittleBuff_uV[j][i]);
+           if (j != numChan - 1) {
+             outputter += ",";
+           } else {
+             outputter += "]}\r\n";
+           }
          }
-         this.udp.send(buffer.array(),this.ip,this.port);
+         try {
+           this.udp.send(outputter, this.ip, this.port);
+         } catch (Exception e) {
+           println(e);
+         }
        }
-        // LSL
-     }else if (this.protocol.equals("LSL")){
-       for (int i=0; i<bufferLen;i++){
+       // LSL
+     } else if (this.protocol.equals("LSL")) {
+       for (int i=0; i<nPointsPerUpdate;i++){
          for(int j=0;j<numChan;j++){
            dataToSend[j+numChan*i] = yLittleBuff_uV[j][i];
          }
@@ -1182,7 +1202,7 @@ class Stream extends Thread{
        outlet_data.push_chunk(dataToSend);
        // SERIAL
      }else if (this.protocol.equals("Serial")){         // Serial Output unfiltered
-       for(int i=0;i<bufferLen;i++){
+       for(int i=0;i<nPointsPerUpdate;i++){
          serialMessage = "["; //clear message
          for(int j=0;j<numChan;j++){
            float chan_uV = yLittleBuff_uV[j][i];//get chan uV float value and truncate to 3 decimal places
@@ -1206,7 +1226,7 @@ class Stream extends Thread{
      // TIME SERIES FILTERED
     }else if (filter==1){
       if (this.protocol.equals("OSC")){
-        for(int i=0;i<bufferLen;i++){
+        for(int i=0;i<nPointsPerUpdate;i++){
           msg.clearArguments();
           for(int j=0;j<numChan;j++){
             msg.add(dataBuffY_filtY_uV[j][start+i]);
@@ -1217,23 +1237,32 @@ class Stream extends Thread{
            println(e);
          }
        }
-     }else if (this.protocol.equals("UDP")){
-       for(int i=0;i<bufferLen;i++){
-         buffer.rewind();
-         for(int j=0;j<numChan;j++){
-           buffer.putFloat(dataBuffY_filtY_uV[j][start+i]);
+     } else if (this.protocol.equals("UDP")){
+       for(int i=0;i<nPointsPerUpdate;i++){
+         String outputter = "{\"type\":\"eeg\",\"data\":[";
+         for (int j = 0; j < numChan; j++){
+           outputter += str(dataBuffY_filtY_uV[j][start+i]);
+           if (j != numChan - 1) {
+             outputter += ",";
+           } else {
+             outputter += "]}\r\n";
+           }
          }
-         this.udp.send(buffer.array(),this.ip,this.port);
-      }
+         try {
+           this.udp.send(outputter, this.ip, this.port);
+         } catch (Exception e) {
+           println(e);
+         }
+       }
      }else if (this.protocol.equals("LSL")){
-       for (int i=0; i<bufferLen;i++){
+       for (int i=0; i<nPointsPerUpdate;i++){
          for(int j=0;j<numChan;j++){
            dataToSend[j+numChan*i] = dataBuffY_filtY_uV[j][i];
          }
        }
        outlet_data.push_chunk(dataToSend);
      }else if (this.protocol.equals("Serial")){
-       for(int i=0;i<bufferLen;i++){
+       for(int i=0;i<nPointsPerUpdate;i++){
          serialMessage = "["; //clear message
          for(int j=0;j<numChan;j++){
            float chan_uV_filt = dataBuffY_filtY_uV[j][start+i];//get chan uV float value and truncate to 3 decimal places
@@ -1274,17 +1303,24 @@ class Stream extends Thread{
        }
       // UDP
      }else if (this.protocol.equals("UDP")){
-       for (int i=0;i<numChan;i++){
-         buffer.rewind();
-         buffer.putFloat(i+1);
-         for (int j=0;j<125;j++){
-           buffer.putFloat(fftBuff[i].getBand(j));
+       String outputter = "{\"type\":\"fft\",\"data\":[[";
+       for (int i = 0;i < numChan; i++){
+         for (int j = 0; j < 125; j++) {
+           outputter += str(fftBuff[i].getBand(j));
+           if (j != 125 - 1) {
+             outputter += ",";
+           }
          }
-         try{
-           this.udp.send(buffer.array(),this.ip,this.port);
-         }catch (Exception e){
-           println(e);
+         if (i != numChan - 1) {
+           outputter += "],[";
+         } else {
+           outputter += "]]}\r\n";
          }
+       }
+       try {
+         this.udp.send(outputter, this.ip, this.port);
+       } catch (Exception e) {
+         println(e);
        }
        // LSL
      }else if (this.protocol.equals("LSL")){
@@ -1335,17 +1371,25 @@ class Stream extends Thread{
         }
        // UDP
       }else if (this.protocol.equals("UDP")){
-        for (int i=0;i<numChan;i++){
-          buffer.rewind();
-          buffer.putFloat(i+1);
+        // DELTA, THETA, ALPHA, BETA, GAMMA
+        String outputter = "{\"type\":\"bandPower\",\"data\":[[";
+        for (int i = 0;i < numChan; i++){
           for (int j=0;j<numBandPower;j++){
-            buffer.putFloat(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
+            outputter += str(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
+            if (j != numBandPower - 1) {
+              outputter += ",";
+            }
           }
-          try{
-            this.udp.send(buffer.array(),this.ip,this.port);
-          }catch (Exception e){
-            println(e);
+          if (i != numChan - 1) {
+            outputter += "],[";
+          } else {
+            outputter += "]]}\r\n";
           }
+        }
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
@@ -1399,17 +1443,20 @@ class Stream extends Thread{
           }
         }
        // UDP
-      }else if (this.protocol.equals("UDP")){
-        for (int i=0;i<numChan;i++){
-          buffer.rewind();
-          buffer.putFloat(i+1);
-          //ADD NORMALIZED EMG CHANNEL DATA
-          buffer.putFloat(w_emg.motorWidgets[i].output_normalized);
-          try{
-            this.udp.send(buffer.array(),this.ip,this.port);
-          }catch (Exception e){
-            println(e);
+      } else if (this.protocol.equals("UDP")) {
+        String outputter = "{\"type\":\"emg\",\"data\":[";
+        for (int i = 0;i < numChan; i++){
+          outputter += str(w_emg.motorWidgets[i].output_normalized);
+          if (i != numChan - 1) {
+            outputter += ",";
+          } else {
+            outputter += "]}\r\n";
           }
+        }
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
@@ -1454,12 +1501,12 @@ class Stream extends Thread{
         }
       // UDP
       }else if (this.protocol.equals("UDP")){
-        // convert boolean to float
-        float temp = w_focus.isFocused ? 1.0 : 0.0;
-        buffer.putFloat(temp); //[CHAN][BAND]
-        try{
-          this.udp.send(buffer.array(),this.ip,this.port);
-        }catch (Exception e){
+        String outputter = "{\"type\":\"focus\",\"data\":";
+        outputter += str(w_focus.isFocused ? 1.0 : 0.0);
+        outputter += "]}\r\n";
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
           println(e);
         }
       // LSL
@@ -1527,7 +1574,7 @@ class Stream extends Thread{
       this.msg = new OscMessage(this.address);
     }else if (this.protocol.equals("UDP")){
       this.udp = new UDP(this);
-      this.udp.setBuffer(1024);
+      this.udp.setBuffer(20000);
       this.udp.listen(false);
       this.udp.log(false);
       println("UDP successfully connected");
@@ -1538,7 +1585,7 @@ class Stream extends Thread{
                             this.streamName,
                             this.streamType,
                             this.nChanLSL,
-                            openBCI.get_fs_Hz(),
+                            getSampleRateSafe(),
                             LSL.ChannelFormat.float32,
                             stream_id
                           );
