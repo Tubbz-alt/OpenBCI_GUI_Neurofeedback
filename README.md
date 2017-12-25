@@ -1,13 +1,37 @@
 ### Neurofeedback widget for the OpenBCI_GUI
 
-This version of standard [OpenBCI_GUI](https://github.com/OpenBCI/OpenBCI_GUI) adds a tone neurofeedback for alpha band (7.5-12.5Hz) for all channels. The tone is hardcoded. The feedback is both with amplitude of the tone and slight changes of frequency. The tone is different for each feedback channel. This is a pretty basic, but working feedback proof of concept.
+This version of standard
+[OpenBCI_GUI](https://github.com/OpenBCI/OpenBCI_GUI) adds a tone
+neurofeedback for alpha band (7.5-12.5Hz) for all channels. It also
+has an option for negative feedback on beta channel (meaning that
+based on weight you set in the GUI, the beta waves will lower the
+tone and alpha waves will increase pitch).
 
-Caveats: 
+The tones are hardcoded. The feedback is both with amplitude of the
+tone and slight changes of frequency. The tone is different for
+each feedback channel. This is a pretty basic, but working feedback
+proof of concept.
+
+Setup:
+
+<p align="center">
+  <img alt="banner" src="/images/openbcigui_neurofeedback_settings.png" width="600">
+</p>
 
 - I recommend turning unused channels off before starting (use keys 1-8)
-- Tune down the volume when starting :)
+- Tune down your system volume when starting :)
+- I recommend either turning off the BP filter or setting it to 5-50Hz
+- Turn off Smoothing in FFT panel, it is important that the feedback has
+  no delay
+- Select the neurofeedback widget, start with alpha+ feedback, then you
+  can switch to "alpha+ beta-" when you are comfortable with it
 
-The code tries to detect artifacts (like jaw movement) by ignoring "superloud tones" over a certain maximal amplitude - when the tone goes over this threshold, the tone is actually set to total silence.
+The code tries to detect artifacts (like jaw movement) by ignoring
+"superloud tones" over a certain maximal amplitude - when the tone
+goes over this threshold, the tone is actually set to total silence
+(Cutoff level). Try to relax your muscles, especially on the head, face
+and neck. If you are cutoff (hear no tone because the amplitude is too
+high), some of your muscles are probably tense.
 
 There is also an option to have hemicoherence tone. You would set up A
 and B channels in the GUI with channels corresponding to the same
@@ -25,8 +49,10 @@ running OpenBCI_GUI from
 Processing](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide).
 Please note that in addition to running it from the IDE, you need
 to copy libraries and the sketch to the right directory and download
-and setup Ganglion Hub for Ganglion boards, the documentation is
-pretty specific on what to do, if you follow it, it will work!
+and setup [OpenBCI Ganglion
+Hub](https://github.com/OpenBCI/OpenBCI_Hub/releases) for Ganglion
+boards, the documentation is pretty specific on what to do, if you
+follow it, it will work!
 
 If you do not see any Ganglion Bluetooth devices and you have Bluetooth on,
 it probably means that Ganlgion Hub is not set up correctly - you need
