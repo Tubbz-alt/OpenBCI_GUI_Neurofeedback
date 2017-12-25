@@ -46,9 +46,9 @@ class W_neurofeedback extends Widget {
   
     addDropdown("FeedbackType", "Type", Arrays.asList("alph+", "alph+ bet-"), 0);
     addDropdown("NoiseCutoffLevel", "Cutoff", Arrays.asList("2 uV", "3 uV", "4 uV", "5 uV",
-        "6 uV", "7 uV", "8 uV", "9 uV", "10 uV", "11 uV", "12 uV", "13 uV", "14 uV", "15 uV"), 1);
+        "6 uV", "7 uV", "8 uV", "9 uV", "10 uV", "11 uV", "12 uV", "13 uV", "14 uV", "15 uV"), 10);
 
-    addDropdown("BetaFactor", "BetaWeight", Arrays.asList("10%", "20%", "30%", "40%",
+    addDropdown("BetaFactor", "Beta%", Arrays.asList("10%", "20%", "30%", "40%",
         "50%", "60%", "70%", "80%", "90%", "100%"), 6);
 
 
