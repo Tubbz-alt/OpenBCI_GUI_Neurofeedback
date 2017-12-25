@@ -28,6 +28,7 @@ class W_neurofeedback extends Widget {
   int hemicoherence_chan2 = 1;
 
   float noise_cutoff_level = 3;
+  float beta_factor = 0.6; // how much does beta factor lower the tone in alpha+beta-
   boolean hemicoherence_enabled = false;
   boolean alphaOnly = true;
   float[] hemicoherenceMemory;
@@ -45,7 +46,11 @@ class W_neurofeedback extends Widget {
   
     addDropdown("FeedbackType", "Type", Arrays.asList("alph+", "alph+ bet-"), 0);
     addDropdown("NoiseCutoffLevel", "Cutoff", Arrays.asList("2 uV", "3 uV", "4 uV", "5 uV",
-        "6 uV", "7 uV", "8 uV", "9 uV", "10 uV"), 1);
+        "6 uV", "7 uV", "8 uV", "9 uV", "10 uV", "11 uV", "12 uV", "13 uV", "14 uV", "15 uV"), 1);
+
+    addDropdown("BetaFactor", "BetaWeight", Arrays.asList("10%", "20%", "30%", "40%",
+        "50%", "60%", "70%", "80%", "90%", "100%"), 6);
+
 
     addDropdown("HemicoherenceEnable", "HC Feedback", Arrays.asList("Off", "On"), 0);
     addDropdown("HemicoherenceChan1", "Chan A", channelList, hemicoherence_chan1);
@@ -167,7 +172,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
         setTone(Ichan, map(alpha_amplitude, 0, noise_cutoff_level, 0, 1)); // or some other range?
         recordAmplitude(Ichan, alpha_amplitude);
        } else { // alpha - beta
-        setTone(Ichan, map(constrain(alpha_amplitude - beta_amplitude, 0, noise_cutoff_level),
+        setTone(Ichan, map(constrain(alpha_amplitude - (beta_factor * beta_amplitude), 0, noise_cutoff_level),
           0, noise_cutoff_level, 0, 1)); // or some other range?
         recordAmplitude(Ichan,
           constrain(alpha_amplitude - beta_amplitude, 0, noise_cutoff_level));
@@ -265,6 +270,11 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
 
 void NoiseCutoffLevel (int n) {
   w_neurofeedback.noise_cutoff_level = n + 2;
+  closeAllDropdowns();
+}
+
+void BetaFactor (int n) {
+  w_neurofeedback.beta_factor = (n + 1) * 0.1;
   closeAllDropdowns();
 }
 
