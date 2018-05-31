@@ -24,7 +24,7 @@ class W_neurofeedback extends Widget {
   Oscil[]       waves;
   int numHarmonic = 2; // number of harmonic frequencies for each wave
   
-  boolean chordMode = false;
+  boolean chordMode = true;
   float[][] chordFrequencies = {
     { 261.63, 329.63, 392.00 }, // C chord
     { 349.23, 440.00, 261.63 }, // F chord
@@ -47,6 +47,13 @@ class W_neurofeedback extends Widget {
   float[] hemicoherenceMemory;
   final int hemicoherenceMemoryLength = 10;
   int hemicoherenceMemoryPointer = 0;
+  float[] amplitudeCounters;
+  float[] displayAmplitudeCounters;
+  float[] previousAmplitudeCounters;
+  int[] amplitudeCountersRaise;
+  
+  long lastUpdate;
+  long epochLength = 60*1000;
 
 
   W_neurofeedback(PApplet _parent) {
@@ -81,8 +88,10 @@ class W_neurofeedback extends Widget {
 
     if (chordMode) numHarmonic = 3;       // for chords, we need three frequencies for each chord
 
+    resetEpoch();
+
     // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
-    waves = new Oscil[(nchan + 1) * numHarmonic]; // we have one tone for hemicoherence, this nchan+1
+    waves = new Oscil[(nchan + 1) * numHarmonic]; // we have one tone for hemicoherence, thus nchan+1
     for (int i=0 ; i<nchan + 1; i++) 
       for (int j=0 ; j<numHarmonic ; j++) {
       waves[(i*numHarmonic)+j] = new Oscil( baseFrequency(i, j, 0f), 0.0f, Waves.SINE );
@@ -97,6 +106,21 @@ class W_neurofeedback extends Widget {
         right.patch(out);
       }
     }
+  }
+
+  public void resetEpoch() {
+    // initialize amplitudeCounters
+    amplitudeCounters = new float[nchan + 1];
+    displayAmplitudeCounters = new float[nchan + 1];
+    previousAmplitudeCounters = new float[nchan + 1];
+    amplitudeCountersRaise = new int[nchan + 1];
+    for (int i=0 ; i<nchan + 1; i++) {
+      amplitudeCounters[i] = 0;
+      displayAmplitudeCounters[i] = 0;
+      previousAmplitudeCounters[i] = 0;
+      amplitudeCountersRaise[i] = 0;
+    }
+    lastUpdate = System.currentTimeMillis();
   }
 
   private float baseFrequency(int channel, int harmonic, float amplitude) {
@@ -171,8 +195,10 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
       }
      }
 
+
      alpha_amplitude = alpha_amplitude / alpha_samples;
      beta_amplitude = beta_amplitude / beta_samples;
+
 
      if (hemicoherence_enabled) {
       if (Ichan == hemicoherence_chan1) {
@@ -190,8 +216,11 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
      if (alpha_amplitude < noise_cutoff_level) { // to avoid noise when a person is moving
        if (alphaOnly) {
         setTone(Ichan, map(alpha_amplitude, 0, noise_cutoff_level, 0, 1)); // or some other range?
-        recordAmplitude(Ichan, alpha_amplitude);
-       } else { // alpha - beta
+        if (alpha_amplitude > noise_cutoff_level)
+          recordAmplitude(Ichan, 0);
+        else 
+          recordAmplitude(Ichan, alpha_amplitude);
+     } else { // alpha - beta
         setTone(Ichan, map(constrain(alpha_amplitude - (beta_factor * beta_amplitude), 0, noise_cutoff_level),
           0, noise_cutoff_level, 0, 1)); // or some other range?
         recordAmplitude(Ichan,
@@ -237,18 +266,47 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
   }
 
   void recordAmplitude(int chan, float amplitude) {
-    // TODO: remember amplitudes (per second) for each channel in an array,
-    // calculate one-minute sum and display
+    amplitudeCounters[chan]+=amplitude;
+    if ((System.currentTimeMillis() - lastUpdate) > epochLength)
+      updateAmplitudes();
+  }
+  
+  void updateAmplitudes() {
+    for (int i=0; i<nchan; i++)
+    if (isChannelActive(i)) {
+      System.out.println("Channel " + (i+1) + " amplitude " + amplitudeCounters[i]);
+      displayAmplitudeCounters[i] = round(amplitudeCounters[i]/100)*100; 
+      amplitudeCountersRaise[i] = round(displayAmplitudeCounters[i] - previousAmplitudeCounters[i]);
+      previousAmplitudeCounters[i] = displayAmplitudeCounters[i];
+      amplitudeCounters[i] = 0;
+    } else {
+      displayAmplitudeCounters[i] = 0;
+    }
+    lastUpdate = System.currentTimeMillis();
   }
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-    //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
 
-    //widgetTemplateButton.draw();
+    color(0,0,0);
+    fill(50);
+    textFont(p4, 16);
+    textAlign(LEFT);
 
+    text("Amplitudes:", x+20, y+20);
+    int channelIdx = 0;
+    for (int i=0; i<nchan; i++)
+    if (displayAmplitudeCounters[i] > 0) {
+      fill(50);
+      int my = y+((h / (nchan+3)) * (channelIdx+2));
+      text("Channel " + (i+1), x+30, my);
+      if (amplitudeCountersRaise[i] >= 0)
+        fill(50,50,255);
+      text(new Integer(round(displayAmplitudeCounters[i])).toString(), x+(w/3), my);
+      channelIdx++;
+    }
     popStyle();
 
   }
@@ -256,10 +314,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
   void screenResized(){
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-    /*
-    widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
-    */
+    
 
   }
 
@@ -290,32 +345,38 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
 
 void NoiseCutoffLevel (int n) {
   w_neurofeedback.noise_cutoff_level = n + 2;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }
 
 void BetaFactor (int n) {
   w_neurofeedback.beta_factor = (n + 1) * 0.1;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }
 
 void FeedbackType(int n) {
   if (n==0) w_neurofeedback.alphaOnly = true;
   else w_neurofeedback.alphaOnly = false;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }
 
 void HemicoherenceEnable(int n) {
   if (n==0) w_neurofeedback.hemicoherence_enabled = false;
   else w_neurofeedback.hemicoherence_enabled = true;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }
 
 void HemicoherenceChan1(int n) {
   w_neurofeedback.hemicoherence_chan1 = n;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }
 
 void HemicoherenceChan2(int n) {
   w_neurofeedback.hemicoherence_chan2 = n;
+  w_neurofeedback.resetEpoch();
   closeAllDropdowns();
 }

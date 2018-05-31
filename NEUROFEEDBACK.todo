@@ -1,3 +1,4 @@
 ✔ GUI should allow to select alpha+ feedback, alpha+/beta- feedback, etc. @done (2017-11-14 00:06)
-☐ GUI should display epoch averages, current values, etc. (see recordAmplitude function)
-☐ timed epochs
+✔ GUI should display epoch averages, current values, etc. (see recordAmplitude function)
+☐ timed epochs - pause after one epoch (updateAmplitudes should stop the sound for a few seconds)
+☐ timed epochs - configurable epochLength
