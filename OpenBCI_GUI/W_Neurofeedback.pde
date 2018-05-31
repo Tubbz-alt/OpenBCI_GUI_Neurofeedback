@@ -184,8 +184,8 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
       }
      }
 
-     System.out.println((Ichan+1) + ": alpha: " + (alpha_amplitude/alpha_samples) + 
-       "(max: " + alpha_max_amplitude +") over " + alpha_samples +" samples");
+ //    System.out.println((Ichan+1) + ": alpha: " + (alpha_amplitude/alpha_samples) + 
+ //      "(max: " + alpha_max_amplitude +") over " + alpha_samples +" samples");
 
      if (alpha_amplitude < noise_cutoff_level) { // to avoid noise when a person is moving
        if (alphaOnly) {
@@ -211,7 +211,7 @@ public void process(float[][] data_newest_uV, //holds raw EEG data that is new s
         hemiIncoherenceAmplitude = hemiIncoherenceAmplitude/2;
       }
 
-      System.out.println("Hemicoherence factor " + pow(0.95, hemiIncoherenceAmplitude));
+      //System.out.println("Hemicoherence factor " + pow(0.95, hemiIncoherenceAmplitude));
       addHemiCoherence(pow(0.95, hemiIncoherenceAmplitude));
     } else setTone(nchan, 0);
   }
