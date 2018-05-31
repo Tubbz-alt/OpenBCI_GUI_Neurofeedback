@@ -24,6 +24,19 @@ class W_neurofeedback extends Widget {
   Oscil[]       waves;
   int numHarmonic = 2; // number of harmonic frequencies for each wave
   
+  boolean chordMode = false;
+  float[][] chordFrequencies = {
+    { 261.63, 329.63, 392.00 }, // C chord
+    { 349.23, 440.00, 261.63 }, // F chord
+    { 392.00, 493.88, 293.66 }, // G chord
+    { 2*261.63, 2*329.63, 2*392.00 }, // C chord
+    { 2*349.23, 2*440.00, 2*261.63 }, // F chord
+    { 2*392.00, 2*493.88, 2*293.66 }, // G chord
+    { 3*261.63, 3*329.63, 3*392.00 }, // C chord
+    { 3*349.23, 3*440.00, 3*261.63 }, // F chord
+    { 3*392.00, 3*493.88, 3*293.66 } // G chord
+  };
+  
   int hemicoherence_chan1 = 0;
   int hemicoherence_chan2 = 1;
 
@@ -66,11 +79,13 @@ class W_neurofeedback extends Widget {
     float panFactor = 0f;                 // 1 means total left/right pan, 0 means MONO (all tones in both
                                           // channels, 0.8f means mixing 80/20, good for headphones
 
+    if (chordMode) numHarmonic = 3;       // for chords, we need three frequencies for each chord
+
     // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
     waves = new Oscil[(nchan + 1) * numHarmonic]; // we have one tone for hemicoherence, this nchan+1
     for (int i=0 ; i<nchan + 1; i++) 
       for (int j=0 ; j<numHarmonic ; j++) {
-      waves[(i*numHarmonic)+j] = new Oscil( baseFrequency(i,0f)*(j+1), 0.0f, Waves.SINE );
+      waves[(i*numHarmonic)+j] = new Oscil( baseFrequency(i, j, 0f), 0.0f, Waves.SINE );
       if (i%2 == 0) {
         Pan left = new Pan((-1f) * panFactor);
         waves[(i*numHarmonic)+j].patch( left );
@@ -84,14 +99,19 @@ class W_neurofeedback extends Widget {
     }
   }
 
-  private float baseFrequency(int channel, float amplitude) {
-    return (400 + (channel*(400/nchan)) /* + (100*amplitude)*/);
+  private float baseFrequency(int channel, int harmonic, float amplitude) {
+    if (chordMode) {
+      return chordFrequencies[channel][harmonic];
+    } else 
+    return (400 + (channel*(400/nchan)) /* + (100*amplitude)*/) * (harmonic+1);
+      
   }
 
   private void setTone(int channel, float amplitude) {
     for (int j=0 ; j<numHarmonic ; j++) {
       waves[(channel*numHarmonic)+j].setAmplitude(amplitude);
-      waves[(channel*numHarmonic)+j].setFrequency(baseFrequency(channel, amplitude)*(j+1)); // 400 - 800Hz is the best frequency
+      // commented out - we are not changing frequency, only amplitude
+      //waves[(channel*numHarmonic)+j].setFrequency(baseFrequency(channel, j, amplitude));
     }
   }
 
