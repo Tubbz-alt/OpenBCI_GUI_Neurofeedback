@@ -1,3 +1,166 @@
+# v4.0.4
+
+Use OpenBCIHub v2.0.5 please.
+
+### Bug Fix
+
+* Cyton impedance check did not work #427
+
+# v4.0.3
+
+Use OpenBCIHub v2.0.3 please.
+
+### New Features
+
+* On Windows, it is no longer necessary to launch the HUB separately.
+* The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
+
+### Bug Fixes
+
+* Ganglion did not work for Mojave #402
+* Ganglion could not do playback file #399
+
+## Beta 1
+
+### Bug Fixes
+
+* Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+* Fixed bug where GUI does not start hub on Windows #300
+
+## Beta 0
+
+* Initial Release
+
+# v4.0.2
+
+Use OpenBCIHub v2.0.2 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
+
+### Breaking Changes
+
+* Now sending and receiving from the hub in JSON!
+
+# v4.0.0
+
+Use OpenBCIHub v2.0.0 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
+
+### Breaking Changes
+
+* Now sending and receiving from the hub in JSON!
+
+## Alpha 2
+
+### New features
+
+* Add number of channels to output of odf files.
+
+### Bug fixes
+
+* Ganglion did not work
+* Ganglion accel did not work
+* Ganglion over bled112 did not work
+* Added playback widget to address #48 #55
+* Added button to check version and update GUI
+
+## Alpha 1
+
+* Initial Release with an error
+
+## Alpha 0
+
+* Initial Release
+
+# v3.4.0
+
+Use OpenBCIHub v1.4.5 please.
+
+### New Features
+
+* Save/Load your favorite GUI settings via dropdown menu or keyboard shortcut (thanks @retiutut)
+* Auto-Load settings when system starts
+* Auto-Save settings when system stops
+* Default settings option added to Settings dropdown
+* Pulse streaming added to Networking
+* Added fourth stream to OSC mode
+* Added plist file to add settings for information when app is built (thanks @retiutut)
+* Added playback scrollbar sub-widget
+* Add BLED112 support for windows and linux
+
+## Beta 1
+
+### Improvements
+
+* Added playback scrollbar sub-widget #38
+
+### Bug Fixes
+
+* Ganglion-accelerometer behavior when loading
+* Catch error when using outdated playback files #348
+
+## Beta 0
+
+### Improvements
+
+* Save/Load default and user settings for all data modes independently
+
+### Bug Fixes
+* Fixed Ganglion-GUI experience on startup when loading settings
+* Error catch: allow ~ 4 seconds to apply channel settings to Cyton when loading
+
+## Alpha 2
+
+### Improvements
+
+* Fixed issue where convert from SD card could cause crash #351
+* Fixed issue with accel and playback file.
+* Fix activate/deactivate channels for Ganglion when loading settings
+* Further cleanup of error messages on system start
+* Make Channel On/Off buttons more readable with white text #361
+* Remove a bunch of outputs
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
+
+## Alpha 1
+
+### Improvements
+
+* Moved the JSON user settings to SavedData
+* Added Info.plist
+* Add BLED112 support for windows and linux
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
+
+### Known Issues
+
+* Ganglion channels stay activated after load from settings.
+
+## Alpha 0
+
+Initial Release
+
+# v3.3.2
+
+Use OpenBCIHub v1.4.4 please.
+
+### Bug Fixes
+
+* Fixed bug where ganglion accel did not work
+
 # v3.3.1
 
 Use OpenBCIHub v1.4.2 please.

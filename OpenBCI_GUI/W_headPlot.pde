@@ -11,9 +11,11 @@
 //
 ///////////////////////////////////////////////////,
 
+
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 int intensityFac_ind = 2;
+
 
 class W_headPlot extends Widget {
 
@@ -34,14 +36,17 @@ class W_headPlot extends Widget {
     addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), 0);
     addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), 0);
     addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
+    //Initialize the headplot
+    updateHeadPlot(nchan);
+  }
 
+  void updateHeadPlot(int _nchan) {
     //add your code here
     headPlot = new HeadPlot(x, y, w, h, win_x, win_y);
     //FROM old Gui_Manager
     headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
     headPlot.setPolarityData_byRef(dataProcessing.polarity);
     setSmoothFac(smoothFac[smoothFac_ind]);
-
   }
 
   void update(){
@@ -133,6 +138,7 @@ void Polarity(int n) {
   } else {
     w_headPlot.headPlot.use_polarity = false;
   }
+  hpPolaritySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -144,12 +150,14 @@ void ShowContours(int n){
     //turn headplot contours off
     w_headPlot.headPlot.drawHeadAsContours = false;
   }
+  hpContoursSave = n;
   closeAllDropdowns();
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
   w_headPlot.setSmoothFac(smoothFac[n]);
+  hpSmoothingSave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -162,6 +170,7 @@ void UnfiltFiltHeadPlot(int n) {
 void Intensity(int n){
   vertScaleFactor_ind = n;
   updateVertScale();
+  hpIntensitySave = n;
   closeAllDropdowns();
 }
 
@@ -245,28 +254,8 @@ class HeadPlot {
   public boolean hardCalcsDone = false;
   public boolean threadLock = false;
 
-  HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
-
-    final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
-    nose_x = new int[3];
-    nose_y = new int[3];
-    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
-    //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
-    ref_electrode_xy = new float[2];  //x-y position of reference electrode
-    electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
-    font = createFont("Arial", 16);
-    drawHeadAsContours = true; //set this to be false for slower computers
-
-    rel_posX = x;
-    rel_posY = y;
-    rel_width = w;
-    rel_height = h;
-    setWindowDimensions(win_x, win_y);
-    setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
-  }
-
   HeadPlot(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
-    final int n_elec = nchan;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
+    final int n_elec = nchan;  //set number of electrodes using the global nchan variable
     nose_x = new int[3];
     nose_y = new int[3];
     electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)

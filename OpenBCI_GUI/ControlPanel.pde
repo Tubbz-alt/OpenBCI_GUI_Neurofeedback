@@ -135,10 +135,6 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
-Button playbackChanButton4;
-Button playbackChanButton8;
-Button playbackChanButton16;
-
 Serial board;
 
 ChannelPopup channelPopup;
@@ -159,6 +155,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
+    controlEventDataSource = str; //Used for output message on system start
     int newDataSource = int(theEvent.getValue());
 
     if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
@@ -173,9 +170,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-    if (isMac()) {
-      protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-    }
+    protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
     protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
 
@@ -218,10 +213,7 @@ public void controlEvent(ControlEvent theEvent) {
       wifiIPAddressDyanmic.color_notPressed = isSelected_color;
       wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
-      updateToNChan(8);
-      playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
-      playbackChanButton8.color_notPressed = isSelected_color;
-      playbackChanButton16.color_notPressed = autoFileName.color_notPressed;
+      //GUI auto detects number of channels for playback when file is selected
     } else if(newDataSource == DATASOURCE_SYNTHETIC){
       updateToNChan(8);
       synthChanButton4.color_notPressed = autoFileName.color_notPressed;
@@ -229,7 +221,7 @@ public void controlEvent(ControlEvent theEvent) {
       synthChanButton16.color_notPressed = autoFileName.color_notPressed;
     }
 
-    output("The new data source is " + str + " and NCHAN = [" + nchan + "]");
+    //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
   }
 
   if (theEvent.isFrom("serialList")) {
@@ -298,7 +290,6 @@ class ControlPanel {
   ChannelCountBox channelCountBox;
   InitBox initBox;
   SyntheticChannelCountBox synthChannelCountBox;
-  PlaybackChannelCountBox playbackChannelCountBox;
 
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
@@ -372,8 +363,7 @@ class ControlPanel {
     wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
-    playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
-    playbackFileBox = new PlaybackFileBox(x + w, (playbackChannelCountBox.y + playbackChannelCountBox.h), w, h, globalPadding);
+    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
@@ -436,7 +426,6 @@ class ControlPanel {
     dataLogBox.update();
     channelCountBox.update();
     synthChannelCountBox.update();
-    playbackChannelCountBox.update();
     sdBox.update();
     rcBox.update();
     wcBox.update();
@@ -461,26 +450,26 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (isHubInitialized && isHubObjectInitialized) {
-      if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-        if (!calledForBLEList) {
-          calledForBLEList = true;
-          if (hub.isHubRunning()) {
-            // Commented out because noble will auto scan
-            hub.searchDeviceStart();
-          }
-        }
-      }
-
-      if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
-        if (!calledForWifiList) {
-          calledForWifiList = true;
-          if (hub.isHubRunning()) {
-            hub.searchDeviceStart();
-          }
-        }
-      }
-    }
+    // if (isHubInitialized && isHubObjectInitialized) {
+    //   if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+    //     if (!calledForBLEList) {
+    //       calledForBLEList = true;
+    //       if (hub.isHubRunning()) {
+    //         // Commented out because noble will auto scan
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    //
+    //   if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
+    //     if (!calledForWifiList) {
+    //       calledForWifiList = true;
+    //       if (hub.isHubRunning()) {
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   public void draw() {
@@ -596,7 +585,6 @@ class ControlPanel {
           cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
-        playbackChannelCountBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
 
@@ -992,9 +980,7 @@ class ControlPanel {
         if (protocolBLEGanglion.isMouseHere()) {
           protocolBLEGanglion.setIsActive(true);
           protocolBLEGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolBLEGanglion.color_notPressed = isSelected_color;
           protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
@@ -1002,23 +988,18 @@ class ControlPanel {
         if (protocolWifiGanglion.isMouseHere()) {
           protocolWifiGanglion.setIsActive(true);
           protocolWifiGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolWifiGanglion.color_notPressed = isSelected_color;
           protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-        if (isMac()) {
-          if (protocolBLED112Ganglion.isMouseHere()) {
-            protocolBLED112Ganglion.setIsActive(true);
-            protocolBLED112Ganglion.wasPressed = true;
-            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
-            protocolBLED112Ganglion.color_notPressed = isSelected_color;
-            protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-          }
+
+        if (protocolBLED112Ganglion.isMouseHere()) {
+          protocolBLED112Ganglion.setIsActive(true);
+          protocolBLED112Ganglion.wasPressed = true;
+          protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+          protocolBLED112Ganglion.color_notPressed = isSelected_color;
+          protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-
-
 
         if (sampleRate200.isMouseHere()) {
           sampleRate200.setIsActive(true);
@@ -1094,33 +1075,9 @@ class ControlPanel {
           selectSDFile.setIsActive(true);
           selectSDFile.wasPressed = true;
         }
-
-        if (playbackChanButton4.isMouseHere()) {
-          playbackChanButton4.setIsActive(true);
-          playbackChanButton4.wasPressed = true;
-          playbackChanButton4.color_notPressed = isSelected_color;
-          playbackChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
-          playbackChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
-        }
-
-        if (playbackChanButton8.isMouseHere()) {
-          playbackChanButton8.setIsActive(true);
-          playbackChanButton8.wasPressed = true;
-          playbackChanButton8.color_notPressed = isSelected_color;
-          playbackChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
-          playbackChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
-        }
-
-        if (playbackChanButton16.isMouseHere()) {
-          playbackChanButton16.setIsActive(true);
-          playbackChanButton16.wasPressed = true;
-          playbackChanButton16.color_notPressed = isSelected_color;
-          playbackChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
-          playbackChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
-        }
       }
 
-      //active buttons during DATASOURCE_PLAYBACKFILE
+      //active buttons during DATASOURCE_SYNTHETIC
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
         if (synthChanButton4.isMouseHere()) {
           synthChanButton4.setIsActive(true);
@@ -1317,35 +1274,40 @@ class ControlPanel {
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+      println("protocolBLEGanglion");
+
       wifiList.items.clear();
       bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
-        output("Protocol BLE Selected for Ganglion");
+        if (isWindows()) {
+          outputSuccess("Using CSR Dongle for Ganglion");
+        } else {
+          outputSuccess("Using built in BLE for Ganglion");
+        }
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLE);
+        // hub.searchDeviceStart();
       } else {
         outputWarn("Please wait till hub is fully initalized");
       }
     }
-    if (isMac()) {
-      if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-        println("protocolBLED112Ganglion");
 
-        wifiList.items.clear();
-        bleList.items.clear();
-        controlPanel.hideAllBoxes();
-        if (isHubObjectInitialized) {
-          output("Protocol BLED112 Selected for Ganglion");
-          println("Protocol BLED112 Selected for Ganglion");
-          if (hub.isPortOpen()) hub.closePort();
-          ganglion.setInterface(INTERFACE_HUB_BLED112);
-        } else {
-          outputWarn("Please wait till hub is fully initalized");
-        }
+    if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
+
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol BLED112 Selected for Ganglion");
+        println("Protocol BLED112 Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
+        ganglion.setInterface(INTERFACE_HUB_BLED112);
+        // hub.searchDeviceStart();
+      } else {
+        outputWarn("Please wait till hub is fully initalized");
       }
     }
-
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
       println("protocolWifiGanglion");
@@ -1357,6 +1319,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1383,6 +1346,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Cyton");
         if (hub.isPortOpen()) hub.closePort();
         cyton.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1447,18 +1411,6 @@ class ControlPanel {
       cyton.setSampleRate(1000);
     }
 
-    if (playbackChanButton4.isMouseHere() && playbackChanButton4.wasPressed) {
-      updateToNChan(4);
-    }
-
-    if (playbackChanButton8.isMouseHere() && playbackChanButton8.wasPressed) {
-      updateToNChan(8);
-    }
-
-    if (playbackChanButton16.isMouseHere() && playbackChanButton16.wasPressed) {
-      updateToNChan(16);
-    }
-
     if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
       updateToNChan(4);
     }
@@ -1521,7 +1473,7 @@ class ControlPanel {
 
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
-      selectInput("Select a pre-recorded file for playback:", "playbackSelected");
+      selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
     }
 
     if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
@@ -1539,10 +1491,8 @@ class ControlPanel {
     refreshWifi.wasPressed = false;
     protocolBLEGanglion.setIsActive(false);
     protocolBLEGanglion.wasPressed = false;
-    if (isMac()) {
-      protocolBLED112Ganglion.setIsActive(false);
-      protocolBLED112Ganglion.wasPressed = false;
-    }
+    protocolBLED112Ganglion.setIsActive(false);
+    protocolBLED112Ganglion.wasPressed = false;
     protocolWifiGanglion.setIsActive(false);
     protocolWifiGanglion.wasPressed = false;
     protocolSerialCyton.setIsActive(false);
@@ -1609,12 +1559,6 @@ class ControlPanel {
     synthChanButton8.wasPressed = false;
     synthChanButton16.setIsActive(false);
     synthChanButton16.wasPressed = false;
-    playbackChanButton4.setIsActive(false);
-    playbackChanButton4.wasPressed = false;
-    playbackChanButton8.setIsActive(false);
-    playbackChanButton8.wasPressed = false;
-    playbackChanButton16.setIsActive(false);
-    playbackChanButton16.wasPressed = false;
     chanButton16.setIsActive(false);
     chanButton16.wasPressed  = false;
     selectPlaybackFile.setIsActive(false);
@@ -1694,7 +1638,7 @@ public void initButtonPressed(){
 
     //if system is already active ... stop system and flip button state back
     else {
-      output("Learn how to use this application and more at docs.openbci.com");
+      outputInfo("Learn how to use this application and more at docs.openbci.com");
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
@@ -1705,9 +1649,9 @@ public void initButtonPressed(){
 
 void updateToNChan(int _nchan) {
   nchan = _nchan;
+  slnchan = _nchan; //used in SoftwareSettings.pde only
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-  output("Channel count set to " + str(nchan));
   println("channel count set to " + str(nchan));
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
@@ -2045,18 +1989,17 @@ class InterfaceBoxGanglion {
     x = _x;
     y = _y;
     w = _w;
-    h = (24 + _padding) * 3;
+    h = (24 + _padding) * 4; // Fix height for extra button for BLED112
     padding = _padding;
 
     if (isMac()) {
-      h = (24 + _padding) * 4; // Fix height for extra button for BLED112
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
       protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
       protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     } else {
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
-      // protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-      protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+      protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
   }
 
@@ -2076,9 +2019,7 @@ class InterfaceBoxGanglion {
 
     protocolBLEGanglion.draw();
     protocolWifiGanglion.draw();
-    if (isMac()) {
-      protocolBLED112Ganglion.draw();
-    }
+    protocolBLED112Ganglion.draw();
   }
 };
 
@@ -2612,52 +2553,6 @@ class SyntheticChannelCountBox {
   }
 };
 
-class PlaybackChannelCountBox {
-  int x, y, w, h, padding; //size and position
-
-  boolean isSystemInitialized;
-  // button for init/halt system
-
-  PlaybackChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
-    x = _x;
-    y = _y;
-    w = _w;
-    h = 73;
-    padding = _padding;
-
-    playbackChanButton4 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
-    if (nchan == 4) playbackChanButton4.color_notPressed = isSelected_color; //make it appear like this one is already selected
-    playbackChanButton8 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
-    if (nchan == 8) playbackChanButton8.color_notPressed = isSelected_color; //make it appear like this one is already selected
-    playbackChanButton16 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
-    if (nchan == 16) playbackChanButton16.color_notPressed = isSelected_color; //make it appear like this one is already selected
-  }
-
-  public void update() {
-  }
-
-  public void draw() {
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("CHANNEL COUNT", x + padding, y + padding);
-    fill(bgColor); //set color to green
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
-    popStyle();
-
-    playbackChanButton4.draw();
-    playbackChanButton8.draw();
-    playbackChanButton16.draw();
-  }
-};
-
 class PlaybackFileBox {
   int x, y, w, h, padding; //size and position
 
@@ -2687,7 +2582,6 @@ class PlaybackFileBox {
     popStyle();
 
     selectPlaybackFile.draw();
-    // chanButton16.draw();
   }
 };
 

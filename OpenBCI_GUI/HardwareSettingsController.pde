@@ -8,11 +8,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-
-//these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-char[][] impedanceCheckValues = new char [nchan][2];
+HardwareSettingsController hwSettingsController;
 
 public void updateChannelArrays(int _nchan) {
   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
@@ -24,7 +20,6 @@ void activateChannel(int Ichan) {
   println("OpenBCI_GUI: activating channel " + (Ichan+1));
   if (eegDataSource == DATASOURCE_CYTON) {
     if (cyton.isPortOpen()) {
-      verbosePrint("**");
       cyton.changeChannelState(Ichan, true); //activate
     }
   } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -68,9 +63,9 @@ class HardwareSettingsController{
 
   int x, y, w, h;
 
-  // int numSettingsPerChannel = 6; //each channel has 6 different settings
-  // char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-  // char[][] impedanceCheckValues = new char [nchan][2];
+  //int numSettingsPerChannel = 6; //each channel has 6 different settings
+  //char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  //char[][] impedanceCheckValues = new char [nchan][2];
 
   int spaceBetweenButtons = 5; //space between buttons
 
@@ -92,6 +87,7 @@ class HardwareSettingsController{
     '1', // SRB2 :: (0) Open, (1) Closed
     '1'
   }; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
+  //
 
   //variables used for channel write timing in writeChannelSettings()
   int channelToWrite = -1;
@@ -132,7 +128,6 @@ class HardwareSettingsController{
             if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
             if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
             break;
-
           case 1: //GAIN ??
             if (channelSettingValues[i][j] == '0') channelSettingButtons[i][1].setString("x1");
             if (channelSettingValues[i][j] == '1') channelSettingButtons[i][1].setString("x2");

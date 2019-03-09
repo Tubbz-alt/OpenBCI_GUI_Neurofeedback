@@ -181,7 +181,7 @@ class Cyton {
 
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
-    output("Setting sample rate for Cyton to " + sampleRate + "Hz");
+    // output("Setting sample rate for Cyton to " + sampleRate + "Hz");
     println("Setting sample rate for Cyton to " + sampleRate + "Hz");
     hub.setSampleRate(sampleRate);
   }
@@ -290,25 +290,25 @@ class Cyton {
           case 1: //"5 min max"
             write('A', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 2: //"5 min max"
+          case 2: //"15 min max"
             write('S', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 3: //"5 min max"
+          case 3: //"30 min max"
             write('F', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 4: //"5 min max"
+          case 4: //"1 hr max"
             write('G', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 5: //"5 min max"
+          case 5: //"2 hr max"
             write('H', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 6: //"5 min max"
+          case 6: //"4 hr max"
             write('J', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 7: //"5 min max"
+          case 7: //"12 hr max"
             write('K', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 8: //"5 min max"
+          case 8: //"24 hr max"
             write('L', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
           default:
@@ -324,7 +324,7 @@ class Cyton {
         }
         break;
       case 6:
-        output("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+        println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
         hub.changeState(STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
@@ -443,7 +443,6 @@ class Cyton {
     }
   }
 
-
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
     if (isPortOpen()) {
@@ -528,10 +527,6 @@ class Cyton {
   public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
     timeOfLastChannelWrite = millis();
     isWritingChannel = true;
-  }
-
-  public void syncChannelSettings() {
-    write("r,start" + TCP_STOP);
   }
 
   /**
@@ -660,16 +655,18 @@ class Cyton {
 
   // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
   public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-    String output = "r,set,";
-    output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
-    output += channelSettingValues[_numChannel][0] + ","; // power down
-    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
-    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
-    output += channelSettingValues[_numChannel][3] + ",";
-    output += channelSettingValues[_numChannel][4] + ",";
-    output += channelSettingValues[_numChannel][5] + TCP_STOP;
-    write(output);
-    // verbosePrint("done writing channel.");
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CHANNEL_SETTINGS);
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
+    json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN, channelSettingValues[_numChannel][0] == '1');
+    json.setInt(TCP_JSON_KEY_CHANNEL_SET_GAIN, getGainForCommand(channelSettingValues[_numChannel][1]));
+    json.setString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE, getInputTypeForCommand(channelSettingValues[_numChannel][2]));
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS, channelSettingValues[_numChannel][3] == '1');
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2, channelSettingValues[_numChannel][4] == '1');
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1, channelSettingValues[_numChannel][5] == '1');
+    hub.writeJSON(json);
+    verbosePrint("done writing channel." + json); //debugging
     isWritingChannel = false;
   }
 
@@ -686,16 +683,13 @@ class Cyton {
   // }
 
   public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
-    String output = "i,set,";
-    if (_numChannel < 8) {
-      output += (char)('0'+(_numChannel+1)) + ",";
-    } else { //(_numChannel >= 8) {
-      //command_activate_channel holds non-daisy and daisy values
-      output += command_activate_channel[_numChannel] + ",";
-    }
-    output += impedanceCheckValues[_numChannel][0] + ",";
-    output += impedanceCheckValues[_numChannel][1] + TCP_STOP;
-    write(output);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
+    json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel][0] == '1');
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel][1] == '1');
+    hub.writeJSON(json);
     isWritingImp = false;
   }
 };

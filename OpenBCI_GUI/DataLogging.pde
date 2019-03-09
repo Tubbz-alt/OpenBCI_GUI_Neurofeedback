@@ -52,8 +52,8 @@ void openNewLogFileBDF(String _fileName) {
   fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
   output_fname = fileoutput_bdf.fname;
-  println("cyton: openNewLogFile: opened BDF output file: " + output_fname);
-  output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
+  //output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
 /**
@@ -70,8 +70,8 @@ void openNewLogFileODF(String _fileName) {
   fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
 
   output_fname = fileoutput_odf.fname;
-  println("cyton: openNewLogFile: opened ODF output file: " + output_fname);
-  output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
+  //output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 /**
@@ -79,14 +79,56 @@ void openNewLogFileODF(String _fileName) {
  *  biosemi data format.
  * @param `_fileName` {String} - The meat of the file name
  */
-void playbackSelected(File selection) {
+void playbackSelectedControlPanel(File selection) {
   if (selection == null) {
     println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
   } else {
     println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
+    //Set the name of the file
     playbackData_fname = selection.getAbsolutePath();
+    playbackData_ShortName = selection.getName();
+    //Process the playback file
+    processNewPlaybackFile();
+    //Determine the number of channels
+    determineNumChanFromFile(playbackData_table);
+    //Output new playback settings to GUI as success
+    outputSuccess("You have selected \""
+    + selection.getName() + "\" for playback. "
+    + str(nchan) + " channels found.");
+    //look at the JSON file to set the range menu using number of recent file entries
+    try {
+      savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+      JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+      maxRangePlaybackSelect = recentFilesArray.size()/10;
+
+      for (int i = 0; i <= maxRangePlaybackSelect; i++) {
+        rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[i]);
+      }
+      playbackHistoryFileExists = true;
+    } catch (NullPointerException e) {
+      //println("Playback history JSON file does not exist. Load first file to make it.");
+      playbackHistoryFileExists = false;
+    }
+    //add playback file that was processed to the JSON history
+    savePlaybackFileToHistory(playbackData_ShortName);
   }
+}
+
+//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
+//Currently looks at the total number of Columns
+//Maybe try counting the number of columns after first index and before X...
+//...where X is the unique data type that occurs after last channel
+void determineNumChanFromFile(Table datatable) {
+  int numColumnsPlaybackFile = datatable.getColumnCount();
+  int numChannelsFoundInPlaybackFile;
+  if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
+    numChannelsFoundInPlaybackFile = 16;
+  } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
+    numChannelsFoundInPlaybackFile = 4;
+  } else {
+    numChannelsFoundInPlaybackFile = 8;
+  }
+  updateToNChan(numChannelsFoundInPlaybackFile);
 }
 
 void closeLogFile() {
@@ -129,7 +171,7 @@ void fileSelected(File selection) {  //called by the Open File dialog box after 
     println("fileSelected: no selection so far...");
   } else {
     //inputFile = selection;
-    playbackData_fname = selection.getAbsolutePath(); //<>//
+    playbackData_fname = selection.getAbsolutePath(); //<>// //<>//
   }
 }
 
@@ -231,7 +273,7 @@ public class OutputFile_rawtxt {
 
   public void writeHeader(float fs_Hz) {
     output.println("%OpenBCI Raw EEG Data");
-    output.println("%");
+    output.println("%Number of channels = " + nchan);
     output.println("%Sample Rate = " + fs_Hz + " Hz");
     output.println("%First Column = SampleIndex");
     output.println("%Last Column = Timestamp ");
@@ -239,10 +281,8 @@ public class OutputFile_rawtxt {
     output.flush();
   }
 
-  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte) {
+  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte, long timestamp) {
     //get current date time with Date()
-    Date date = new Date();
-
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);
@@ -255,7 +295,8 @@ public class OutputFile_rawtxt {
           writeAccValues(data.auxValues, scale_for_aux);
         }
       }
-      output.print( ", " + dateFormat.format(date));
+      output.print( ", " + dateFormat.format(new Date(timestamp)));
+      output.print( ", " + timestamp);
       output.println(); rowsWritten++;
       //output.flush();
     }
@@ -1528,7 +1569,7 @@ void convert16channelLine() {
   if(printNextLine){
     for(int i=0; i<hexNums.length; i++){
       h = hexNums[i];
-      if (h.length()%2 == 0) {  // make sure this is a real number
+      if (h.length()%2 == 0 && h.length() <= 10) {  // make sure this is a real number
         intData[i] = unhex(h);
       } else {
         intData[i] = 0;
@@ -1561,7 +1602,7 @@ void convert16channelLine() {
       }
     }
     // println(h); // use for debugging
-    if (h.length()%2 == 0) {  // make sure this is a real number
+    if (h.length()%2 == 0 && h.length() <= 10) {  // make sure this is a real number
       floatData[i] = unhex(h);
     } else {
       floatData[i] = 0;
