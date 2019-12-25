@@ -6,7 +6,7 @@ void setup() {
   background(150);
 
   // Prepare the points for the plot
-  int nPoints = 60;
+  int nPoints = 100;
   GPointsArray points = new GPointsArray(nPoints);
 
   for (int i = 0; i < nPoints; i++) {
@@ -20,7 +20,7 @@ void setup() {
   // GPlot plot = new GPlot(this, 25, 25);
 
   // Set the plot title and the axis labels
-  plot.setTitleText("FFT Plot");
+  plot.setTitleText("A very simple example");
   plot.getXAxis().setAxisLabelText("x axis");
   plot.getYAxis().setAxisLabelText("y axis");
 

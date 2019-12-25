@@ -1,3 +1,237 @@
+# v4.1.7
+Use OpenBCIHub v2.1.0 please.
+
+## Beta 3
+
+### Bug Fixes
+* Update graphica library so GUI sessions load faster on Mac #630
+* Catch Invalid Playback File Exception #649
+
+### Improvements
+* Add LSL FFT example Python script
+
+## Beta 2
+
+### Improvements
+* Add prominent time display for all data modes #635
+* Add button for Networking Data Ouputs Guide #643
+* Add button to open Sample Data file directory #645
+
+### Bug Fixes
+* BandPower: Activate all channels by default #634
+* Fix streaming 16ch Filtered TimeSeries w/ high sample rate #638 Ty @Joe-Westra
+* Cp5 error in networking stops session init #642 #637 #622
+* Check internet connection on app start to avoid GUI crashing #555
+
+## Beta 0
+
+### Improvements
+* Dropped Packet Interpolation!
+* Make UDPx3 default Transfer protocol Cyton+Wifi
+
+### Bug Fixes
+* Playback mode update and bug fixes #633
+* Update channelSelect in BandPower and SSVEP widgets when new playback file is loaded
+
+# v4.1.6
+Use OpenBCIHub v2.1.0 please.
+
+### Improvements
+* Fix LSL streaming more than one data type #592
+
+## Beta 0
+
+### Improvements
+* Cyton+Dongle AutoConnect Button!
+* GUI error message when using old Cyton firmware #597
+* Update Focus widget help button
+* Console Log window UI/UX update
+* Add GUI Troubleshooting Guide button to "Help" dropdown in TopNav.pde
+
+### Bug Fixes
+* Cyton+WiFi unable to start session #555 #590
+* Networking: Start/Stop stream button behavior #593
+* Networking: Only show Pulse datatype for Cyton(Live)
+* Show error when loading empty playback file and delete file from history
+
+# v4.1.5
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 4
+### Improvements
+* Minor UI/UX edits for style and clarity
+* Update Cyton SD card duration select from MenuList to ScrollableList
+* Update UI/UX in SSVEP widget
+
+## Beta 3
+
+### Bug fixes
+* Update links to OpenBCI Forum and new Docs at GitHub Pages
+
+## Beta 2
+
+### Bug fixes
+* Only delete settings files if they are old/broken
+
+## Beta 1
+
+### Bug fixes
+* Fix 'Open Log as Text' feature in ConsoleLog
+* Delete old/broken user and default settings when attempting to load
+
+### Improvements
+
+#### SSVEP
+* Place this widget in BETA mode w/ description in widget help text
+
+#### Networking Widget
+* Implement FFT over LSL
+* Auto-switch to Band Power instead of FFT for Serial output
+* Add link to networking output guide for all data types
+
+## Beta 0
+
+### Improvements
+* Update Radio Config tools and UI to be more user-friendly
+* Establish minimum GUI app size of 705x400
+
+### Bug fixes
+* Add reusable ChannelSelect class to Widget.pde #573
+* Allow up to 20 seconds for GUI to connect to Hub #531
+
+# v4.1.4
+
+## Beta 0
+
+### Improvements
+* Added SSVEP widget! (Thanks @leanneapichay)
+* Update/restructure settings for TimeSeries and Networking
+* Update Cyton RadioConfig in Control Panel to be more user friendly
+* Scale widget selector dropdown based on widget height to allow for more widgets
+
+###  Bug fixes
+* Close network streams when session is ended or app is closed
+* Networking settings not being saved/loaded properly
+* Update Ganglion Impedance button text when successfully stopped
+* Check Hub connect on app start using TimerTask #531
+* Calculate playback mode time using last column for backwards compatibility #546
+
+# v4.1.3
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 3
+
+###  Bug fixes
+* Fix app crash when streaming 16ch over LSL #557
+
+## Beta 2
+
+### Improvements
+* Update Serial EMG output in Networking Widget
+* Add Accelerometer and Aux Data output to Networking Widget #532
+* Rename "Start/Stop System" button to "Start/Stop Session"
+* Add absolute timestamp to LSL stream for all data types #530
+* Update OpenBCI Data Format using Sessions #483
+* Add dropdown to limit recording duration for OpenBCI Data Format #461
+* Show intro animation on launch instead of grey screen
+
+### Bug Fixes
+* Clear Playback History dropdown when settings are cleared #521
+* Accelerometer Widget values display correct data
+* Fix NullPointerExceptions caused by Data Log updates #548
+
+
+## Beta 1
+
+### Bug Fixes
+* Fix BLED112 Impedance check in HUB by allowing 2 seconds for command/success
+
+## Beta 0
+
+### Bug Fixes
+* GUI now produces valid BDF files Fixes #441
+* Relocate User data to Documents folder on all OS #535
+
+# v4.1.2
+Use OpenBCIHub v2.0.8 please.
+
+## Beta 2
+
+### Improvements
+* Add additional button hover text
+* Console log message cleanup
+
+### Bug Fixes
+* Fix #418, #493, #506, #422, and #509
+
+## Beta 1
+
+### Improvements
+* Shorten file names in playback history when needed
+* New coloring for Band Power widget
+* Smooth and filter dropdowns added to Band Power
+* Improved axis labels on Band Power widget
+* Cleaned up some console output
+* On windows, properly scale for High DPI displays
+
+### Bug Fixes
+* Fix crash when opening the console window
+* Fix crash when selecting a playback file from the playback widget
+* Fix crash when loading old settings file
+* Fix buttons being clicked under dropdowns
+
+## Beta 0
+
+### New Features
+* Expert mode button to toggle advanced keyboard shortcuts
+* Clear GUI settings button w/ confirmation
+
+### Improvements
+* New icon for "back to start" button in Playback mode
+* Playback History widget functionality and appearance
+* Optimized playback history
+* Adjust Networking Widget appearance and scaling
+* Explicitly warn users when the HUB is not running
+
+### Bug Fixes
+* Fixed: Ganglion accelerometer starts "on" but data not streaming
+* Fixed: LSL streaming in standalone GUI
+
+# v4.1.1
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 0
+
+### New Features
+* Added Console Log window in the GUI, so users can diagnose and report issues
+
+### Bug Fixes
+* Time in status line is not updated every seconds #443
+* Playback Mode: Playback slider and start data stream clears graphs #438
+* Load correct default settings for FFT X and Y axis
+
+# v4.1.0
+
+Use OpenBCIHub v2.0.6 please.
+
+## Beta 1
+
+### Bug Fixes
+* Cyton impedance check did not work for Ch16 #427
+
+## Beta 0
+
+### New Features
+* Sync Time Series and Accelerometer functionality and appearance #410
+* Option to sync time window in Accelerometer and Analog Read #410
+* Choose recent playback files from a dropdown in the Control Panel
+
+### Bug Fixes
+* Add GUI version info to Update button help text #407
+* Fix Time Series graph display issue #247
+* Align Ganglion accelerometer data to match Cyton #398
+* Fixed the GUI freezing on launch with a grey screen #409 #406 #426
+
 # v4.0.4
 
 Use OpenBCIHub v2.0.5 please.

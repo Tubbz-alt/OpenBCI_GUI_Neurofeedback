@@ -65,13 +65,11 @@ Original README follows.
 # The OpenBCI GUI
 
 <p align="center">
-  <img alt="banner" src="/images/GUI-V2-SCREENSHOT.JPG/" width="600">
+  <img alt="banner" src="/images/GUI-V4-Screenshot.jpg/" width="600">
 </p>
 <p align="center" href="">
   Provide a stable and powerful interface for any OpenBCI device
 </p>
-
-[![Stories in Ready](https://badge.waffle.io/OpenBCI/OpenBCI_GUI_v2.0.svg?label=ready&title=Ready)](http://waffle.io/OpenBCI/OpenBCI_GUI_v2.0)
 
 ## Welcome!
 
@@ -114,11 +112,11 @@ The OpenBCI GUI will:
 * Provide a widget framework that allows users to create their own experiments.
 * Provide the ability to output data into a saved file for later offline processing.
 
-Using the OpenBCI GUI allows you, the user, to quickly visualize adn use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
+Using the OpenBCI GUI allows you, the user, to quickly visualize and use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
 
 ## Who are we?
 
-Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. Currently AJ Keller is a main contributor to moving the GUI in a more stable direction. Wang Shu, Gabe, Colin and many other contractors/interns have contributed valuable code and widgets!  
+Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. AJ Keller, Gabriel Diaz, Richard Waltman, and Daniel Lasry have all made major contributions as well. 
 
 ## What do we need?
 
@@ -139,7 +137,7 @@ Please note that it's very important to us that we maintain a positive and suppo
 
 ## Contact us
 
-If you want to report a problem or suggest an enhancement we'd love for you to [open an issue](../../issues) at this github repository because then we can get right on it. But you can also contact [AJ][link_aj_keller] by email (pushtheworldllc AT gmail DOT com) or on [twitter](https://twitter.com/aj-ptw).
+If you want to report a problem or suggest an enhancement, we'd love for you to [open an issue](../../issues) at this github repository so we can get right on it!
 
 ## Find out more
 
@@ -161,24 +159,39 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 
 Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_processing]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
-## Troubleshooting
-If you find your self saying:
-_When I run the OpenBCI UI from Processing on my Mac I don’t see the Ganglion_
-_But from the OpenBCI App (real one, not from the code), it works._
-_I feel like I need to authorize Processing to use Bluetooth… it that makes any sense at all_
+### System Requirements
+#### Hardware
+- 1.6 GHz or faster processor
+- 2 GB of RAM
+- 400 MB of hard drive space (minimum)
 
-Please follow these instructions for getting the **critical** piece of software called the OpenBCI HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide-install-openbci-hub-on-maclinux) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-openbci-hub-on-windows). Thanks and happy hacking!
+#### Platforms
+OpenBCI GUI has been tested on the following platforms:
+- OS X 10.8.5 or later
+- Windows 7, 8.1, and 10 (32-bit and 64-bit[recommended])
+- Linux Ubuntu Desktop 18
+
+OpenGL acceleration is required.
+
+
+## Troubleshooting
+- **When making an issue here on GitHub, please use an Issue or New Feature Template.** Otherwise, the issue will be closed and you will be asked to make a new issue using a template. This maintains a standard of communication and helps resolve issues in a timely manner.
+
+- The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, [please follow these instructions](https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#install-openbci-hub-on-mac-linux-windows) for getting the **critical** piece of software called the OpenBCI HUB for Mac/Linux/Windows. Thanks and happy hacking!
+
+- If you are on a Mac and you seem to get a "spinning wheel of death" when trying to open a dialog box to view files (example "SELECT PLAYBACK FILE" button), [please update your Java Runtime Environment](https://www.java.com/en/download/). This happens because Java was not packaged with a version of the GUI producing this error.
+
+- For more on GUI troubleshooting, head over to the [GUI Troublshooting Doc](https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting).
 
 ## <a name="license"></a> License:
 
 MIT
 
-[link_aj_keller]: https://github.com/aj-ptw
 [link_shop_wifi_shield]: https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550
 [link_shop_ganglion]: https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board
 [link_shop_cyton]: https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel
 [link_shop_cyton_daisy]: https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel
 [link_ptw]: https://www.pushtheworldllc.com
 [link_openbci]: http://www.openbci.com
-[link_gui_widget_tutorial]: http://docs.openbci.com/Tutorials/15-Custom_Widgets
-[link_gui_run_from_processing]: http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide
+[link_gui_widget_tutorial]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget
+[link_gui_run_from_processing]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#running-the-openbci-gui-from-the-processing-ide
